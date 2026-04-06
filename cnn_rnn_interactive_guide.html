@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: #0f0f1a;
+    color: #e0e0ff;
+    min-height: 100vh;
+    padding: 16px;
+  }
+  h1 {
+    text-align: center;
+    font-size: 1.4rem;
+    background: linear-gradient(90deg, #7c3aed, #06b6d4);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+  }
+  .subtitle { text-align: center; color: #888; font-size: 0.8rem; margin-bottom: 16px; }
+
+  /* Unit tabs */
+  .unit-tabs { display: flex; gap: 8px; justify-content: center; margin-bottom: 16px; }
+  .unit-tab {
+    padding: 8px 22px;
+    border-radius: 20px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+    background: #1a1a2e;
+    color: #aaa;
+  }
+  .unit-tab.active {
+    background: linear-gradient(135deg, #7c3aed, #06b6d4);
+    color: white;
+    border-color: transparent;
+  }
+
+  /* Question grid */
+  .q-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    margin-bottom: 18px;
+  }
+  .q-btn {
+    padding: 10px 4px;
+    border-radius: 10px;
+    border: 2px solid #2a2a4a;
+    background: #1a1a2e;
+    color: #ccc;
+    cursor: pointer;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-align: center;
+    transition: all 0.18s;
+  }
+  .q-btn:hover { border-color: #7c3aed; color: white; }
+  .q-btn.active {
+    background: linear-gradient(135deg, #7c3aed55, #06b6d433);
+    border-color: #06b6d4;
+    color: white;
+  }
+  .q-btn.done { border-color: #10b981; color: #10b981; }
+
+  /* Card */
+  .card {
+    background: #12122a;
+    border-radius: 14px;
+    border: 1.5px solid #2a2a4a;
+    padding: 18px;
+    margin-bottom: 14px;
+  }
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .q-num {
+    background: linear-gradient(135deg, #7c3aed, #06b6d4);
+    color: white;
+    border-radius: 50%;
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900; font-size: 0.85rem;
+    flex-shrink: 0;
+  }
+  .q-title { font-size: 0.95rem; font-weight: 700; color: #c4b5fd; }
+  .q-topic { font-size: 0.72rem; color: #06b6d4; margin-top: 2px; }
+
+  /* Tabs inside card */
+  .inner-tabs { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+  .inner-tab {
+    padding: 5px 14px;
+    border-radius: 14px;
+    border: 1.5px solid #2a2a4a;
+    background: #0f0f1a;
+    color: #aaa;
+    cursor: pointer;
+    font-size: 0.75rem;
+    font-weight: 600;
+    transition: all 0.15s;
+  }
+  .inner-tab.active { background: #7c3aed33; border-color: #7c3aed; color: #c4b5fd; }
+
+  /* Content sections */
+  .section { display: none; }
+  .section.visible { display: block; }
+
+  .analogy {
+    background: linear-gradient(135deg, #1e1b4b, #0f172a);
+    border-left: 4px solid #7c3aed;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 0.82rem;
+    line-height: 1.6;
+    margin-bottom: 10px;
+  }
+  .analogy .emoji { font-size: 1.3rem; }
+
+  .concept-box {
+    background: #0a0a1a;
+    border: 1px solid #2a2a4a;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 0.8rem;
+    line-height: 1.7;
+    margin-bottom: 10px;
+  }
+
+  .diagram-box {
+    background: #050510;
+    border: 1px dashed #3a3a6a;
+    border-radius: 8px;
+    padding: 12px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.72rem;
+    color: #06b6d4;
+    line-height: 1.7;
+    overflow-x: auto;
+    white-space: pre;
+    margin-bottom: 10px;
+  }
+
+  .quiz-area { }
+  .quiz-q {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #e0e0ff;
+    margin-bottom: 10px;
+  }
+  .quiz-options { display: flex; flex-direction: column; gap: 7px; }
+  .quiz-opt {
+    padding: 9px 14px;
+    border-radius: 8px;
+    border: 1.5px solid #2a2a4a;
+    background: #1a1a2e;
+    color: #ccc;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.15s;
+    text-align: left;
+  }
+  .quiz-opt:hover { border-color: #7c3aed; color: white; }
+  .quiz-opt.correct { border-color: #10b981; background: #10b98120; color: #10b981; }
+  .quiz-opt.wrong { border-color: #ef4444; background: #ef444420; color: #ef4444; }
+  .quiz-feedback {
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    display: none;
+  }
+  .quiz-feedback.show { display: block; }
+  .quiz-feedback.correct { background: #10b98115; border: 1px solid #10b981; color: #10b981; }
+  .quiz-feedback.wrong { background: #ef444415; border: 1px solid #ef4444; color: #ef4444; }
+
+  .key-point {
+    background: linear-gradient(135deg, #064e3b22, #0f172a);
+    border: 1px solid #10b981;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 0.8rem;
+    color: #6ee7b7;
+    margin-top: 8px;
+  }
+
+  .tag {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 10px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    margin: 2px;
+  }
+  .tag-cnn { background: #7c3aed33; color: #c4b5fd; border: 1px solid #7c3aed55; }
+  .tag-rnn { background: #06b6d433; color: #67e8f9; border: 1px solid #06b6d455; }
+
+  .progress-bar {
+    height: 4px;
+    background: #1a1a2e;
+    border-radius: 2px;
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #7c3aed, #06b6d4);
+    border-radius: 2px;
+    transition: width 0.3s;
+  }
+  .progress-text { text-align: right; font-size: 0.7rem; color: #666; margin-bottom: 4px; }
+
+  .mark-done-btn {
+    padding: 7px 18px;
+    border-radius: 20px;
+    border: none;
+    background: linear-gradient(135deg, #10b981, #06b6d4);
+    color: white;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 10px;
+  }
+  .mark-done-btn:hover { opacity: 0.9; }
+
+  .hidden { display: none; }
+  .placeholder {
+    text-align: center;
+    color: #444;
+    padding: 40px;
+    font-size: 0.9rem;
+  }
+</style>
+</head>
+<body>
+
+<h1>🧠 CNN & RNN — Interactive Study Guide</h1>
+<p class="subtitle">Deep Learning • Unit 3 & 4 • All 20 Questions</p>
+
+<div class="unit-tabs">
+  <button class="unit-tab active" onclick="switchUnit(3)">📷 Unit 3 — CNN (Q1–10)</button>
+  <button class="unit-tab" onclick="switchUnit(4)">🔤 Unit 4 — RNN/NLP (Q1–10)</button>
+</div>
+
+<div class="progress-text" id="prog-text">0 / 20 mastered</div>
+<div class="progress-bar"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+
+<div class="q-grid" id="q-grid"></div>
+
+<div id="main-content">
+  <div class="placeholder">👆 Pick a question above to start learning!</div>
+</div>
+
+<script>
+const done = new Set();
+
+const questions = {
+  3: [
+    {
+      title: "Convolution Operation",
+      topic: "Sliding kernel · Element-wise multiply · Feature map",
+      tag: "cnn",
+      analogy: `<span class="emoji">🔍</span> Imagine you have a tiny magnifying glass (the kernel) and you slide it across a photo pixel by pixel. At each stop, you multiply what you see by the kernel values and add them up. That sum becomes one pixel in your output. That's convolution — the CNN's way of spotting patterns!`,
+      concept: `<b>What is it?</b> Convolution slides a kernel (filter) over the input, computes dot products at each position, and builds an output feature map.\n\n<b>Key terms:</b>\n• <b>Kernel/Filter</b> — small matrix of learnable weights\n• <b>Stride</b> — how many pixels the kernel jumps each step\n• <b>Feature map</b> — the output of a convolution layer\n\n<b>Math example (2×2 kernel on 3×3 input):</b>\nTop-left position = 1×1 + 2×0 + 4×0 + 5×1 = <b>6</b>\n\n<b>Why CNNs use this:</b> Shared weights → far fewer parameters than a fully-connected layer!`,
+      diagram: `Input (3×3)          Kernel (2×2)      Output (2×2)
+┌───┬───┬───┐        ┌───┬───┐
+│ 1 │ 2 │ 3 │        │ 1 │ 0 │        ┌────┬────┐
+├───┼───┼───┤    ★   ├───┼───┤   =    │  6 │  8 │
+│ 4 │ 5 │ 6 │        │ 0 │ 1 │        ├────┼────┤
+├───┼───┼───┤        └───┴───┘        │ 12 │ 14 │
+│ 7 │ 8 │ 9 │                         └────┴────┘
+└───┴───┴───┘
+
+Slide →  [1 2]  [2 3]     ↓ Slide  [4 5]  [5 6]
+         [4 5]  [5 6]              [7 8]  [8 9]
+          = 6    = 8                = 12   = 14`,
+      quiz: {
+        q: "What does a larger stride do to the output feature map?",
+        opts: ["Makes it larger", "Makes it smaller", "Has no effect", "Doubles it"],
+        answer: 1,
+        feedback: "✅ Correct! A larger stride means the kernel skips more pixels, producing a smaller output feature map."
+      }
+    },
+    {
+      title: "Pooling Operations",
+      topic: "Max pooling · Spatial reduction · Translation invariance",
+      tag: "cnn",
+      analogy: `<span class="emoji">📸</span> Imagine compressing a 4K photo to a thumbnail. You don't need every pixel — just the most important ones. Max pooling is like scanning each small block and keeping only the brightest (strongest) signal. Result? Smaller size, same key info!`,
+      concept: `<b>What is pooling?</b> A downsampling operation that reduces spatial dimensions.\n\n<b>Max Pooling (most common):</b>\nTake a window (e.g., 2×2), stride 2 → pick the MAX value from each region.\n\n<b>Why it helps:</b>\n• Reduces computation\n• Reduces overfitting\n• Small translation invariance (shift image a bit → same result)\n\n<b>Average Pooling</b> also exists — takes mean instead of max.`,
+      diagram: `Input Feature Map (4×4)        Max Pool 2×2, stride 2
+┌───┬───┬───┬───┐
+│ 1 │ 4 │ 2 │ 1 │    ┌──────┐ ┌──────┐     Output (2×2)
+├───┼───┼───┼───┤    │1 4   │ │2 1   │     ┌───┬───┐
+│ 5 │ 8 │ 3 │ 4 │    │5 8   │ │3 4   │ →   │ 8 │ 4 │
+├───┼───┼───┼───┤    └──────┘ └──────┘     ├───┼───┤
+│ 7 │ 6 │ 4 │ 5 │    ┌──────┐ ┌──────┐     │ 7 │ 5 │
+├───┼───┼───┼───┤    │7 6   │ │4 5   │     └───┴───┘
+│ 1 │ 3 │ 1 │ 2 │    │1 3   │ │1 2   │
+└───┴───┴───┴───┘    └──────┘ └──────┘
+                     max=8   max=4   max=7  max=5`,
+      quiz: {
+        q: "What is the primary purpose of pooling in CNNs?",
+        opts: ["Add more parameters", "Reduce spatial dimensions", "Increase image resolution", "Replace convolution"],
+        answer: 1,
+        feedback: "✅ Yes! Pooling reduces spatial size, cutting computation and helping prevent overfitting."
+      }
+    },
+    {
+      title: "Transfer Learning with Pre-trained CNN",
+      topic: "VGG16 · Feature extraction · Fine-tuning",
+      tag: "cnn",
+      analogy: `<span class="emoji">🧩</span> Imagine hiring a chef who already knows how to cook 1000 dishes. You don't teach them to hold a knife again — you just say "now cook MY recipe." Transfer learning is exactly this: use a CNN trained on millions of images, plug your small dataset on top, done!`,
+      concept: `<b>Steps for feature extraction transfer learning:</b>\n1. Load pre-trained model (VGG16, ResNet, Inception)\n2. Remove final classification layer\n3. Freeze earlier layers (their weights stay fixed)\n4. Add your new dense classifier layers\n5. Train only the new layers on your data\n\n<b>When to use it:</b> When your dataset is small (hundreds/thousands of images)\n\n<b>Pre-trained on:</b> ImageNet (1.2M images, 1000 classes)`,
+      diagram: `Pre-trained CNN (e.g. VGG16)
+┌─────────────────────────────────┐
+│  Conv Layers → learned features  │  ← FROZEN (keep these)
+│  (edges, textures, shapes...)    │
+└─────────────────┬───────────────┘
+                  │ feature vector
+┌─────────────────▼───────────────┐
+│    Your new Dense classifier     │  ← TRAIN this part
+│  (your classes: cat/dog/etc.)    │
+└─────────────────────────────────┘
+
+Example: Plant disease classification
+  VGG16 features → leaf textures → Dense → Healthy/Diseased`,
+      quiz: {
+        q: "In transfer learning for feature extraction, which layers do we typically freeze?",
+        opts: ["The final output layer", "The early/middle conv layers", "All layers", "None — we retrain everything"],
+        answer: 1,
+        feedback: "✅ Correct! We freeze the conv layers (they already know edges/textures) and only train the new classifier head."
+      }
+    },
+    {
+      title: "Kernel Size & Stride Effects",
+      topic: "Receptive field · Output dimensions · Detail vs context",
+      tag: "cnn",
+      analogy: `<span class="emoji">🔬</span> Kernel size = zoom level of your lens. Small lens (3×3): you see fine detail. Big lens (5×5): you see the bigger picture but miss tiny details.\n\nStride = how fast you scan. Stride 1 = slow, detailed scan. Stride 2 = quick scan, smaller output.`,
+      concept: `<b>Kernel Size effect:</b>\n• 3×3 → fine patterns (edges, textures) — used in VGG16, ResNet\n• 5×5 → broader context — more computation\n• 7×7 → very wide context (used in ResNet's first layer)\n\n<b>Stride effect:</b>\n• Stride 1 → output size ≈ input size (more overlap)\n• Stride 2 → output size roughly halved (less overlap, faster)\n\n<b>Formula:</b> Output size = (Input - Kernel) / Stride + 1\nExample: (7 - 3) / 1 + 1 = 5`,
+      diagram: `Kernel Size comparison (same input):
+                     3×3 kernel              5×5 kernel
+Focus area:       ┌───┐                   ┌─────┐
+                  │ . │ ← fine detail     │ . . │ ← broader
+                  └───┘                   └─────┘
+
+Stride comparison (3×3 kernel, 5×5 input):
+Stride=1:   5 positions   [dense, more detail]
+  ↓↓↓↓↓
+Stride=2:   2-3 positions [sparse, faster, smaller output]
+
+Output Size = (Input - Kernel) / Stride + 1
+  e.g. (5-3)/1+1 = 3   vs   (5-3)/2+1 = 2`,
+      quiz: {
+        q: "You have a 32×32 input, 5×5 kernel, stride 1. What is the output size?",
+        opts: ["30×30", "28×28", "32×32", "16×16"],
+        answer: 1,
+        feedback: "✅ (32-5)/1+1 = 28. So the output is 28×28!"
+      }
+    },
+    {
+      title: "VGG16 vs Inception vs ResNet",
+      topic: "Architecture comparison · Depth · Parameters",
+      tag: "cnn",
+      analogy: `<span class="emoji">🏗️</span> VGG16 = a very tall but simple LEGO tower (all same bricks, many layers).\nInception = a wide, multi-lane highway (parallel paths of different sizes).\nResNet = a smart elevator system with shortcuts between floors.`,
+      concept: `<b>VGG16:</b>\n• Only 3×3 filters, very uniform\n• 138M parameters — heavy!\n• Easy to understand, good baseline\n\n<b>Inception (GoogLeNet):</b>\n• Parallel branches: 1×1, 3×3, 5×5 convs + pooling\n• 22 layers, ~6.8M params — efficient!\n• Captures multi-scale features simultaneously\n\n<b>ResNet:</b>\n• Skip/residual connections: H(x) = F(x) + x\n• Solves vanishing gradient for very deep nets\n• Can go 50, 101, 152+ layers`,
+      diagram: `VGG16:
+Input→[3×3 conv]→[3×3 conv]→[Pool]→[3×3 conv]→...→FC→Output
+   (simple stack, all same filter size)
+
+Inception Module:
+                ┌──→ 1×1 conv ──────────┐
+Input ──────────┼──→ 3×3 conv ──────────┼──→ Concat
+                ├──→ 5×5 conv ──────────┤
+                └──→ MaxPool → 1×1 ─────┘
+
+ResNet Block:
+  x ──────────────────────────────→ (+) → Output
+  │                                  ↑
+  └──→ [Conv→BN→ReLU→Conv→BN] → F(x)─┘
+  H(x) = F(x) + x  (residual learning)`,
+      quiz: {
+        q: "Which architecture uses parallel convolution branches of different sizes?",
+        opts: ["VGG16", "Inception", "ResNet", "AlexNet"],
+        answer: 1,
+        feedback: "✅ Inception! It runs 1×1, 3×3, 5×5 convolutions in parallel within the same module."
+      }
+    },
+    {
+      title: "Residual Connections",
+      topic: "Skip connections · Vanishing gradient · Identity mapping",
+      tag: "cnn",
+      analogy: `<span class="emoji">🛗</span> Imagine climbing 100 floors of stairs. Each floor, you get a bit more tired (gradient fades). Now imagine an elevator that lets you skip directly from floor 1 to floor 50. Residual connections are that elevator — information jumps layers, staying fresh!`,
+      concept: `<b>The problem:</b> In very deep networks, gradients shrink during backpropagation → early layers don't learn = vanishing gradient problem.\n\n<b>Residual solution:</b>\nInstead of learning H(x) directly, learn F(x) = H(x) - x\nThen: H(x) = F(x) + x\n\n<b>Why it works:</b>\n• If extra layers are useless, F(x) → 0, output = x (identity)\n• Gradient can flow through shortcut path directly\n• Enables 50, 100, 150+ layer networks\n• Won ImageNet 2015 with 152-layer ResNet`,
+      diagram: `Without skip connection:
+x → [Conv] → [Conv] → [Conv] → ... → output
+  gradient shrinks with each layer ↓↓↓
+
+With residual connection:
+x ──────────────────────────────── (+) → H(x)
+│                                   ↑
+└──→ [Conv → BN → ReLU → Conv → BN]─┘
+         F(x) = H(x) - x
+
+Gradient superhighway:
+  ∂Loss/∂x = ∂Loss/∂H · (∂F/∂x + 1)
+                          ↑ the +1 prevents vanishing!`,
+      quiz: {
+        q: "If the residual block learns F(x) = 0, what does the output H(x) equal?",
+        opts: ["0", "x (identity)", "2x", "∞"],
+        answer: 1,
+        feedback: "✅ H(x) = F(x) + x = 0 + x = x. The block learns to pass the input unchanged — identity mapping!"
+      }
+    },
+    {
+      title: "R-CNN → Fast R-CNN → Faster R-CNN",
+      topic: "Object detection · Region proposals · RPN",
+      tag: "cnn",
+      analogy: `<span class="emoji">🚗</span> R-CNN: Scan 2000 parking spots one by one with a camera. Slow!\nFast R-CNN: Take ONE aerial photo, then check 2000 spots from it. Faster!\nFaster R-CNN: Train a smart AI to suggest ONLY the spots worth checking. Fastest!`,
+      concept: `<b>R-CNN (2014):</b>\n• Selective Search → ~2000 proposals\n• Each proposal passed through CNN separately\n• Classify with SVM + box regression\n• Problem: ~47 sec/image!\n\n<b>Fast R-CNN (2015):</b>\n• Run CNN ONCE on whole image\n• ROI Pooling extracts features per proposal\n• ~0.3 sec/image\n\n<b>Faster R-CNN (2016):</b>\n• Replace Selective Search with learnable RPN\n• Fully end-to-end trainable\n• ~0.2 sec/image`,
+      diagram: `R-CNN:
+Image → Selective Search → 2000 crops → CNN×2000 → SVM → Boxes
+                                          ↑ VERY SLOW
+
+Fast R-CNN:
+Image → CNN (once) → Feature Map → ROI Pool → Classifier
+                                    ↑ ONE CNN PASS
+
+Faster R-CNN:
+Image → CNN (once) → Feature Map → RPN → ROI Pool → Classifier
+                                    ↑ LEARNED proposals!
+
+Speed comparison:
+R-CNN:       ~47 sec/image
+Fast R-CNN:   ~0.3 sec/image
+Faster R-CNN: ~0.2 sec/image`,
+      quiz: {
+        q: "What did Faster R-CNN replace Selective Search with?",
+        opts: ["SVM", "ROI Pooling", "Region Proposal Network (RPN)", "Max Pooling"],
+        answer: 2,
+        feedback: "✅ The Region Proposal Network (RPN) — a small learnable network that suggests promising object regions."
+      }
+    },
+    {
+      title: "YOLO vs R-CNN Trade-offs",
+      topic: "Speed vs accuracy · One-stage vs two-stage",
+      tag: "cnn",
+      analogy: `<span class="emoji">⚡ vs 🎯</span>\nYOLO = a sprinter — blazing fast, good enough accuracy.\nR-CNN = a careful surgeon — precise, but slow.\nFor live video: use YOLO. For medical imaging: maybe R-CNN.`,
+      concept: `<b>YOLO (You Only Look Once):</b>\n• Single forward pass → boxes + classes\n• Divides image into S×S grid\n• Each cell predicts B boxes + confidence + class\n• 45+ FPS on GPU (real-time!)\n• Struggles with tiny/crowded objects\n\n<b>R-CNN family:</b>\n• Two-stage: propose then classify\n• More precise localization\n• Better for high-accuracy tasks\n• Too slow for real-time`,
+      diagram: `YOLO Pipeline:
+Input → ┌────────────────────┐ → [x,y,w,h, conf, class]
+        │  Single CNN pass   │    for ALL grid cells at once
+        └────────────────────┘
+                ⚡ ~0.02 sec/image
+
+R-CNN Pipeline:
+Input → [Proposals] → [Features] → [Classify] → [Refine boxes]
+           ↑                ↑
+      2000 regions    CNN per region
+                🎯 ~0.2-47 sec/image
+
+Use YOLO when:   speed matters (surveillance, self-driving)
+Use R-CNN when:  accuracy matters (medical, research)`,
+      quiz: {
+        q: "YOLO's core innovation is that it predicts bounding boxes and classes in:",
+        opts: ["Two stages", "A single forward pass", "Using Selective Search", "A recurrent loop"],
+        answer: 1,
+        feedback: "✅ One single forward pass through the network — that's what makes YOLO real-time fast!"
+      }
+    },
+    {
+      title: "Transfer Learning Effectiveness",
+      topic: "Domain adaptation · Fine-tuning · Small datasets",
+      tag: "cnn",
+      analogy: `<span class="emoji">🧠</span> You already know English. Learning Spanish is much easier because grammar concepts transfer. Transfer learning does the same — a CNN that learned ImageNet features already knows edges, shapes, textures. Your new task just needs to adapt the ending!`,
+      concept: `<b>4 ways to use transfer learning:</b>\n1. Use as-is (same domain, same classes)\n2. Feature extractor only (freeze all conv layers)\n3. Fine-tune some layers (unfreeze later layers)\n4. Fine-tune all layers (lots of data available)\n\n<b>What transfers:</b>\n• Layer 1-2: edges, colors, blobs\n• Layer 3-4: textures, patterns\n• Layer 5+: object parts\n• Final: task-specific\n\n<b>Benefits:</b> Faster convergence, less data needed, better accuracy`,
+      diagram: `Large Dataset (ImageNet, 1.2M images)
+         ↓ Train from scratch
+   Pre-trained CNN weights
+         ↓ Transfer!
+Your Task (e.g., 500 plant images)
+         ↓ Fine-tune
+Better model than training from scratch!
+
+What the layers learn:
+Layer 1: [edges]  Layer 2: [corners]  Layer 3: [patterns]
+Layer 4: [parts]  Layer 5: [objects]  FC: [class scores]
+   ← generic features →              ← task specific →
+   (transfer these!)                  (retrain these!)`,
+      quiz: {
+        q: "Transfer learning is MOST useful when:",
+        opts: ["You have millions of training images", "Your dataset is small", "You want to train from scratch", "Your task is very different from source"],
+        answer: 1,
+        feedback: "✅ Transfer learning shines when your target dataset is small — you borrow knowledge from large pre-trained models!"
+      }
+    },
+    {
+      title: "Best CNN for Real-time Detection",
+      topic: "Architecture selection · YOLO · Justification",
+      tag: "cnn",
+      analogy: `<span class="emoji">🏎️</span> If you need a car for daily city commute: pick a fuel-efficient hatchback (YOLO). If you need a car for a precision race track: pick a high-performance but slower F1 car (Faster R-CNN). Match the tool to the task!`,
+      concept: `<b>For real-time object detection, choose YOLO because:</b>\n\n✅ Single-stage → no proposal generation delay\n✅ 45+ FPS on modern GPU\n✅ End-to-end differentiable\n✅ Processes full image at once (global context)\n✅ Good enough accuracy for surveillance, driving\n\n<b>Real-time use cases:</b>\n• Autonomous vehicles\n• Security camera monitoring\n• Sports analytics\n• AR/VR applications\n\n<b>When NOT to use YOLO:</b>\n• High-precision medical detection\n• When accuracy > speed`,
+      diagram: `Decision Framework:
+┌─────────────────────────────────┐
+│ Is real-time speed required?     │
+└──────────────┬──────────────────┘
+              YES              NO
+               ↓                ↓
+            YOLO          Faster R-CNN /
+        (45+ FPS)          DETR / etc.
+                          (more accurate)
+
+YOLO grid approach:
+Image divided into 7×7 grid
+Each cell: predict 2 boxes + class probability
+All predictions made simultaneously → FAST!
+
+Final output: NMS (Non-Max Suppression) → clean boxes`,
+      quiz: {
+        q: "For autonomous vehicle real-time detection, which is the better fit?",
+        opts: ["R-CNN (more accurate)", "YOLO (faster)", "VGG16 only", "SVM"],
+        answer: 1,
+        feedback: "✅ YOLO! Autonomous vehicles need real-time decisions at 30+ FPS — speed is critical here."
+      }
+    }
+  ],
+  4: [
+    {
+      title: "Skip-Gram Word Embeddings",
+      topic: "Word2Vec · Center word → context · Dense vectors",
+      tag: "rnn",
+      analogy: `<span class="emoji">🕵️</span> Skip-Gram is like a spy who knows you by your company. If "deep" hangs out with "learning" and "neural" a lot, it must be related to ML. Skip-Gram learns this by predicting neighbors from a center word — "tell me what surrounds you and I'll know who you are!"`,
+      concept: `<b>Skip-Gram idea:</b> Given center word → predict context words\n\n<b>Steps:</b>\n1. One-hot encode center word\n2. Multiply by embedding matrix (W) → word vector\n3. Multiply by output matrix (W') → scores for each word\n4. Softmax → probabilities for context words\n5. Backprop → update matrices\n\n<b>Result:</b> Words with similar contexts → similar vectors\n\n<b>Vector math works:</b>\nking - man + woman ≈ queen 🤯`,
+      diagram: `Corpus: "I love deep learning"
+Window size = 1
+
+Training pairs (center → context):
+  love  → I
+  love  → deep
+  deep  → love
+  deep  → learning
+
+Embedding space after training:
+  deep    = [0.21, -0.33, 0.77, ...]
+  learning= [0.19, -0.30, 0.74, ...]   ← similar!
+  king    = [0.71, -0.22, 0.31, ...]
+  queen   = [0.69, -0.20, 0.35, ...]   ← similar!
+
+king - man + woman ≈ queen  (vector arithmetic!)`,
+      quiz: {
+        q: "In Skip-Gram, what is the input and what do we predict?",
+        opts: ["Context → center word", "Center word → context words", "Sentence → paragraph", "Word → definition"],
+        answer: 1,
+        feedback: "✅ Skip-Gram takes ONE center word as input and predicts surrounding context words. (CBOW is the reverse!)"
+      }
+    },
+    {
+      title: "RNN Forward Pass",
+      topic: "Hidden state · Recurrence · Sequential processing",
+      tag: "rnn",
+      analogy: `<span class="emoji">📖</span> Reading a book word by word and keeping notes (hidden state). Each new word updates your notes based on what you just read AND your existing notes. That's exactly how an RNN processes sequences — one step at a time, carrying memory forward.`,
+      concept: `<b>RNN equations:</b>\n• h_t = tanh(U·x_t + W·h_(t-1) + b)\n• o_t = V·h_t + c\n• y_t = softmax(o_t)\n\n<b>Key connections:</b>\n• Input-to-hidden: U (projects x_t)\n• Hidden-to-hidden: W (carries memory)\n• Hidden-to-output: V (produces prediction)\n\n<b>Why share weights?</b> Same U,W,V used at every time step → parameter efficiency`,
+      diagram: `Unrolled RNN for "I love AI":
+
+x1="I"   x2="love"  x3="AI"
+  ↓         ↓          ↓
+[RNN]─h1→[RNN]─h2→ [RNN]─h3→ output
+  ↑                              ↑
+h0=0                        final prediction
+
+Equations at each step:
+  h1 = tanh(U·x1 + W·h0 + b)
+  h2 = tanh(U·x2 + W·h1 + b)
+  h3 = tanh(U·x3 + W·h2 + b)
+  y3 = softmax(V·h3 + c)
+
+Same U, W, V matrices reused at every step!`,
+      quiz: {
+        q: "In an RNN, what does the hidden state h_t represent?",
+        opts: ["The current input only", "Memory of all past inputs up to time t", "The final output", "A random vector"],
+        answer: 1,
+        feedback: "✅ h_t is the hidden state — it encodes a 'memory' of everything the RNN has seen up to time step t."
+      }
+    },
+    {
+      title: "LSTM Cell & Gate Computations",
+      topic: "Forget · Input · Output gates · Cell state",
+      tag: "rnn",
+      analogy: `<span class="emoji">🗄️</span> LSTM has a filing cabinet (cell state C_t):\n• Forget gate = janitor deciding what to THROW OUT\n• Input gate = secretary deciding what to FILE IN\n• Output gate = manager deciding what to SHOW to the boss\n\nResult: important info stays for hundreds of steps!`,
+      concept: `<b>6 LSTM equations in order:</b>\n1. f_t = σ(W_f[h_(t-1), x_t] + b_f)  → Forget gate\n2. i_t = σ(W_i[h_(t-1), x_t] + b_i)  → Input gate\n3. C̃_t = tanh(W_c[h_(t-1), x_t] + b_c) → Candidates\n4. C_t = f_t ⊙ C_(t-1) + i_t ⊙ C̃_t   → New cell state\n5. o_t = σ(W_o[h_(t-1), x_t] + b_o)  → Output gate\n6. h_t = o_t ⊙ tanh(C_t)              → New hidden state`,
+      diagram: `LSTM internals:
+         C_(t-1) ─────────────────────────→ C_t ──→
+              ↓           ↓                  ↓
+           [×f_t]      [+i_t×C̃_t]       [tanh]
+              ↑           ↑                  ↓
+         forget gate  input gate          [×o_t]
+              ↑           ↑                  ↓
+         [σ]          [σ]  [tanh]           h_t
+              ↑           ↑
+         [h_(t-1), x_t] ──── (all gates receive same input)
+
+Solve numerically: compute gates f,i,C̃ first
+then update C_t, then compute o_t, then h_t`,
+      quiz: {
+        q: "LSTM's cell state C_t acts as:",
+        opts: ["Short-term memory (resets often)", "Long-term memory (persists across many steps)", "The output prediction", "The input encoding"],
+        answer: 1,
+        feedback: "✅ C_t is the long-term memory conveyor belt — it flows through with minimal modification, preserving info over long sequences."
+      }
+    },
+    {
+      title: "RNN Long-term Dependency Limitations",
+      topic: "Vanishing gradient · Exploding gradient · BPTT",
+      tag: "rnn",
+      analogy: `<span class="emoji">📞</span> Imagine playing Telephone across 100 people. The original message gets distorted and lost by the end. RNNs have the same problem — information from step 1 barely survives to step 100. That's the vanishing gradient problem.`,
+      concept: `<b>Vanishing Gradient:</b>\n• Gradients multiplied at each time step during backpropagation\n• If weights < 1: gradients shrink exponentially → near zero\n• Early layers get near-zero updates → don't learn\n\n<b>Exploding Gradient:</b>\n• If weights > 1: gradients grow exponentially → NaN\n• Fix: gradient clipping\n\n<b>Root cause:</b> BPTT must multiply gradients through T time steps\n\n<b>Solutions:</b> LSTM, GRU, Transformers`,
+      diagram: `Sentence: "The cat that sat on the mat was _____"
+
+RNN trying to connect "cat" to blank:
+h1  →  h2  →  h3  →  h4  →  h5  →  h6  →  h7
+cat   that   sat    on    the   mat   was  [???]
+ ↑_____________________________________________↑
+  gradient must flow back 7 steps — fades away!
+
+Gradient at step t:
+∂L/∂h1 = ∂L/∂h7 × (W^T)^6
+
+If |W| < 1: (W^T)^6 ≈ 0  → vanishing gradient!
+If |W| > 1: (W^T)^6 → ∞  → exploding gradient!`,
+      quiz: {
+        q: "The vanishing gradient problem means:",
+        opts: ["The model learns too fast", "Early layers get tiny gradients and barely learn", "The model uses too much memory", "Gradients become too large"],
+        answer: 1,
+        feedback: "✅ Gradients shrink exponentially through time steps — early layers effectively stop learning. LSTM solves this!"
+      }
+    },
+    {
+      title: "Unidirectional vs Bidirectional RNN",
+      topic: "Context direction · NLP tasks · Stacking RNNs",
+      tag: "rnn",
+      analogy: `<span class="emoji">👁️</span> Unidirectional RNN = reading a book with your right eye covered — you only see what's behind you.\nBidirectional RNN = reading with both eyes — you see past AND future words. Much richer understanding!`,
+      concept: `<b>Unidirectional RNN:</b>\n• Processes left → right only\n• h_t depends on x_1...x_t (no future info)\n• Good for: language modeling, speech recognition\n\n<b>Bidirectional RNN (Bi-RNN):</b>\n• Two RNNs: forward + backward\n• Forward: x_1→x_2→...→x_T\n• Backward: x_T→...→x_2→x_1\n• Output: concatenate or sum both hidden states\n• Good for: NER, sentiment, translation (BERT uses this!)`,
+      diagram: `Unidirectional:
+x1 → x2 → x3 → x4 → x5
+ ↓    ↓    ↓    ↓    ↓
+h1 → h2 → h3 → h4 → h5  (can only see past)
+
+Bidirectional:
+Forward:  h1→ h2→ h3→ h4→ h5→
+x1    x2    x3    x4    x5
+Backward: h1'← h2'← h3'← h4'← h5'←
+
+Output at position 3: concat(h3, h3')
+             ↑ sees both "I love" AND "AI very much"
+
+Example: "He sat on the [bank] of the river"
+→ "river" (future) tells us bank = riverside, not financial!`,
+      quiz: {
+        q: "For Named Entity Recognition (NER), which RNN variant is typically better?",
+        opts: ["Unidirectional (simpler)", "Bidirectional (sees full context)", "Neither — use CNN", "Both are identical"],
+        answer: 1,
+        feedback: "✅ Bidirectional! To recognize entity type, knowing what comes AFTER the word is often crucial."
+      }
+    },
+    {
+      title: "LSTM & GRU Gating Mechanisms",
+      topic: "Vanishing gradient solution · Gate math · Comparison",
+      tag: "rnn",
+      analogy: `<span class="emoji">🚰</span> Gating = water valves controlling flow.\n• Forget gate: valve that drains old info\n• Input gate: valve that fills new info\n• Output gate: valve that releases to next layer\n\nValves can be 0 (closed) to 1 (fully open) — so the network LEARNS which valves to open when!`,
+      concept: `<b>How gates fix vanishing gradient:</b>\n\nPlain RNN: h_t = tanh(W·h_(t-1) + U·x_t)\n→ gradient × W at every step → shrinks!\n\nLSTM cell state update:\nC_t = f_t ⊙ C_(t-1) + i_t ⊙ C̃_t\n→ if f_t ≈ 1: C_(t-1) passes through unchanged\n→ gradient can flow back without shrinking!\n\n<b>GRU (simpler):</b>\n• Only 2 gates: update (z_t) and reset (r_t)\n• No separate cell state\n• h_t = z_t ⊙ h_(t-1) + (1-z_t) ⊙ h̃_t\n• Fewer parameters → faster training`,
+      diagram: `Why gates solve vanishing gradient:
+
+Plain RNN gradient path:
+∂C1/∂C0 = W_hh (gets multiplied many times) → shrinks!
+
+LSTM gradient path through cell state:
+∂C_t/∂C_(t-1) = f_t (just a sigmoid output, ~1 if needed!)
+                 ↑ can be ≈1 → gradient flows unchanged!
+
+LSTM vs GRU:
+         LSTM                  GRU
+Gates:   forget, input,        update, reset
+         output (3 gates)      (2 gates)
+State:   cell + hidden         hidden only
+Params:  more                  fewer
+Speed:   slower                faster
+Memory:  stronger (usually)    often comparable`,
+      quiz: {
+        q: "GRU is simpler than LSTM mainly because it:",
+        opts: ["Uses more layers", "Has no gating at all", "Has 2 gates instead of 3 and no separate cell state", "Uses attention instead"],
+        answer: 2,
+        feedback: "✅ GRU merges the forget and input gates into an update gate, and removes the separate cell state — simpler and faster!"
+      }
+    },
+    {
+      title: "Self-Attention Mechanism",
+      topic: "Query · Key · Value · Attention scores",
+      tag: "rnn",
+      analogy: `<span class="emoji">🎯</span> Self-attention is like a spotlight operator at a concert. For each performer (word), they shine the spotlight more on the performers that matter most for the current moment. "It was tired" → spotlight shines on "animal" not "street".`,
+      concept: `<b>Self-attention steps:</b>\n1. For each word, create Q (query), K (key), V (value) vectors\n2. Compute attention scores: score = Q · K^T / √d_k\n3. Apply softmax → attention weights (sum to 1)\n4. Weighted sum of V vectors → context-aware representation\n\n<b>Why it beats RNNs:</b>\n• Direct connection between any two words\n• No sequential dependency → parallelizable\n• Long-range = same cost as short-range`,
+      diagram: `Sentence: "The animal didn't cross the street because it was tired"
+
+Self-attention for word "it":
+Word:    The  animal  didn't  cross  street  it   tired
+Score:   0.1   0.6    0.05   0.05   0.05   0.1   0.5
+                ↑ high!                           ↑ high!
+
+Attention formula:
+  Attention(Q,K,V) = softmax(Q·K^T / √d_k) · V
+
+Why √d_k? Prevents dot products from getting too large!
+
+Parallel computation:
+RNN:  x1 → x2 → x3 → x4 (must wait for previous step)
+Attn: x1, x2, x3, x4 ALL computed simultaneously! ⚡`,
+      quiz: {
+        q: "What is the key advantage of self-attention over RNNs for long sequences?",
+        opts: ["It uses less memory", "Any two words connect directly regardless of distance", "It's simpler to implement", "It requires more training data"],
+        answer: 1,
+        feedback: "✅ Direct connections! RNNs pass info step-by-step (fades over distance). Self-attention connects word 1 and word 100 directly."
+      }
+    },
+    {
+      title: "LSTM vs GRU Performance",
+      topic: "Benchmarking · Sequence tasks · Trade-offs",
+      tag: "rnn",
+      analogy: `<span class="emoji">🏋️ vs 🤸</span>\nLSTM = heavy powerlifter — strong on complex tasks, but needs more time and energy.\nGRU = agile gymnast — almost as good, but faster and more flexible.\n\nFor most tasks, try GRU first. If you need more power, switch to LSTM.`,
+      concept: `<b>LSTM advantages:</b>\n• Better for very long sequences\n• Explicit cell state → stronger memory\n• More expressive\n\n<b>GRU advantages:</b>\n• Fewer parameters (faster to train)\n• Less memory usage\n• Often matches LSTM on medium sequences\n• Simpler to implement\n\n<b>When to use what:</b>\n• Short/medium sequences + speed needed → GRU\n• Long sequences + complex dependencies → LSTM\n• No clear universal winner! (your notes say this)`,
+      diagram: `Task: Predict next word in sequence
+
+Short sequence (length < 30):
+GRU: ████████████████ 92% accuracy  ← often wins or ties
+LSTM: ████████████████ 93% accuracy
+
+Long sequence (length > 100):
+GRU: ████████████████ 88%
+LSTM: █████████████████ 91%          ← LSTM often wins
+
+Training time comparison:
+GRU:  ████████░░░░ faster  (fewer params → less compute)
+LSTM: ████████████ slower  (more params → more compute)
+
+Practical advice:
+1. Start with GRU (faster iteration)
+2. Try LSTM if more capacity is needed
+3. Validate on your specific dataset!`,
+      quiz: {
+        q: "On a short text sentiment analysis task with 10k examples, which would you try FIRST?",
+        opts: ["LSTM (always better)", "GRU (faster, often comparable)", "Plain RNN", "CNN"],
+        answer: 1,
+        feedback: "✅ GRU first! It's faster to train and often performs comparably to LSTM on shorter sequences."
+      }
+    },
+    {
+      title: "Word Embeddings in NLP",
+      topic: "Dense vectors · Semantic similarity · Downstream tasks",
+      tag: "rnn",
+      analogy: `<span class="emoji">🗺️</span> One-hot encoding = giving every city its own unique color with no relation to others. Embeddings = a real map where Paris and Lyon are close, and Tokyo is far from both. Now distances mean something — that's the power of word embeddings!`,
+      concept: `<b>One-hot vs Embeddings:</b>\n• One-hot: [0,0,1,0,0,...] — sparse, no meaning in distances\n• Embedding: [0.3, -0.1, 0.7, ...] — dense, similar words are close\n\n<b>Methods:</b>\n• Word2Vec (Skip-Gram, CBOW)\n• GloVe (global co-occurrence statistics)\n• FastText (subword embeddings)\n• Contextual: BERT, GPT (different vector per context!)\n\n<b>Applications:</b>\nSentiment, Translation, NER, QA, Summarization`,
+      diagram: `One-hot encoding (vocab size = 10000):
+"king"  = [0,0,0,...,1,...,0,0]   ← 9999 zeros!
+"queen" = [0,0,0,...,0,...,1,0]   ← completely different vector
+No relationship captured.
+
+Word2Vec embeddings (d=4):
+"king"  = [ 0.71, -0.22,  0.31,  0.55]
+"queen" = [ 0.69, -0.20,  0.35,  0.52]  ← similar!
+"apple" = [-0.31,  0.45, -0.67,  0.12]  ← different
+
+Vector space visualization:
+              king • queen
+                    •
+man •     woman •
+                          apple •  (far away)
+
+king - man + woman ≈ queen ✨`,
+      quiz: {
+        q: "Why are word embeddings preferred over one-hot encoding?",
+        opts: ["They are smaller in size", "They capture semantic similarity between words", "They are easier to compute", "They don't need training"],
+        answer: 1,
+        feedback: "✅ Embeddings place semantically similar words close in vector space — one-hot treats every word as completely unrelated!"
+      }
+    },
+    {
+      title: "Attention vs Recurrent Models",
+      topic: "Transformers · Parallelism · Long-range dependency",
+      tag: "rnn",
+      analogy: `<span class="emoji">📡 vs 🐛</span>\nRNN = an earthworm — processes info inch by inch, sequentially. Gets tired after a long tunnel.\nAttention = a satellite — sees the ENTIRE landscape at once, connects any two points instantly.\nTransformers chose the satellite approach — that's why GPT and BERT dominate today!`,
+      concept: `<b>RNN limitations:</b>\n• Sequential → can't parallelize\n• Long-range: info fades over distance\n• Training: slow on long sequences\n\n<b>Attention advantages:</b>\n• Parallel computation (all tokens at once)\n• Direct connection any-to-any\n• No gradient fading over "distance"\n• Scales well with data and compute\n\n<b>Transformers = Attention + Position Encoding + FFN</b>\nBERT, GPT, T5, LLaMA — all attention-based!`,
+      diagram: `RNN processing "The cat sat on the mat [was] tired":
+step1→step2→step3→step4→step5→step6→step7
+  ↑must wait for each previous step!
+  ↑gradients from step7 to step1 may vanish
+
+Attention processing same sentence:
+All 7 words processed SIMULTANEOUSLY
+Every word directly attends to every other word:
+
+word7 ("tired") attends to:
+  "cat" (0.6) ← strongly relevant
+  "mat" (0.3) ← somewhat relevant  
+  "on"  (0.1) ← less relevant
+
+No waiting. No fading. Pure parallel power! ⚡
+
+That's why GPT, BERT, Claude — all use attention,
+not RNNs, for core sequence modeling.`,
+      quiz: {
+        q: "Why can't RNNs be easily parallelized during training?",
+        opts: ["They use too much memory", "Each time step depends on the previous hidden state", "They require GPUs", "They use attention internally"],
+        answer: 1,
+        feedback: "✅ h_t depends on h_(t-1) — you MUST compute step 1 before step 2. This sequential dependency prevents parallelism!"
+      }
+    }
+  ]
+};
+
+let currentUnit = 3;
+let currentQ = null;
+let innerTabs = {};
+
+function switchUnit(unit) {
+  currentUnit = unit;
+  currentQ = null;
+  document.querySelectorAll('.unit-tab').forEach((t,i) => {
+    t.classList.toggle('active', (i===0 && unit===3) || (i===1 && unit===4));
+  });
+  renderGrid();
+  document.getElementById('main-content').innerHTML = '<div class="placeholder">👆 Pick a question above to start learning!</div>';
+}
+
+function renderGrid() {
+  const grid = document.getElementById('q-grid');
+  const qs = questions[currentUnit];
+  grid.innerHTML = qs.map((q,i) => {
+    const isDone = done.has(`${currentUnit}-${i}`);
+    const isActive = currentQ === i;
+    return `<button class="q-btn ${isActive?'active':''} ${isDone?'done':''}" onclick="selectQ(${i})">Q${i+1}<br><span style="font-size:0.65rem;font-weight:400;">${q.title.split(' ')[0]}</span></button>`;
+  }).join('');
+  updateProgress();
+}
+
+function selectQ(idx) {
+  currentQ = idx;
+  renderGrid();
+  renderCard(idx);
+}
+
+function renderCard(idx) {
+  const q = questions[currentUnit][idx];
+  const key = `${currentUnit}-${idx}`;
+  if (!innerTabs[key]) innerTabs[key] = 'analogy';
+
+  const content = document.getElementById('main-content');
+  const tagClass = `tag-${q.tag}`;
+
+  content.innerHTML = `
+    <div class="card">
+      <div class="card-header">
+        <div class="q-num">Q${idx+1}</div>
+        <div>
+          <div class="q-title">${q.title}</div>
+          <div class="q-topic">${q.topic}</div>
+        </div>
+        <span class="tag ${tagClass}" style="margin-left:auto;">${q.tag.toUpperCase()}</span>
+      </div>
+
+      <div class="inner-tabs">
+        <button class="inner-tab ${innerTabs[key]==='analogy'?'active':''}" onclick="switchInner(${idx},'analogy')">💡 Analogy</button>
+        <button class="inner-tab ${innerTabs[key]==='concept'?'active':''}" onclick="switchInner(${idx},'concept')">📚 Concept</button>
+        <button class="inner-tab ${innerTabs[key]==='diagram'?'active':''}" onclick="switchInner(${idx},'diagram')">🗺️ Diagram</button>
+        <button class="inner-tab ${innerTabs[key]==='quiz'?'active':''}" onclick="switchInner(${idx},'quiz')">🎯 Quiz</button>
+      </div>
+
+      <div id="sec-analogy" class="section ${innerTabs[key]==='analogy'?'visible':''}">
+        <div class="analogy">${q.analogy}</div>
+        <div class="key-point">💡 <b>Start here</b> — get the intuition first, then dive into concepts!</div>
+      </div>
+
+      <div id="sec-concept" class="section ${innerTabs[key]==='concept'?'visible':''}">
+        <div class="concept-box" style="white-space:pre-wrap;">${q.concept}</div>
+      </div>
+
+      <div id="sec-diagram" class="section ${innerTabs[key]==='diagram'?'visible':''}">
+        <div class="diagram-box">${q.diagram}</div>
+      </div>
+
+      <div id="sec-quiz" class="section ${innerTabs[key]==='quiz'?'visible':''}">
+        <div class="quiz-area">
+          <div class="quiz-q">🎯 ${q.quiz.q}</div>
+          <div class="quiz-options" id="quiz-opts-${idx}">
+            ${q.quiz.opts.map((o,i) => `<button class="quiz-opt" onclick="checkAnswer(${idx},${i})">${String.fromCharCode(65+i)}. ${o}</button>`).join('')}
+          </div>
+          <div class="quiz-feedback" id="quiz-fb-${idx}"></div>
+        </div>
+      </div>
+
+      <button class="mark-done-btn" onclick="markDone(${idx})">✅ Mark as Mastered</button>
+    </div>
+  `;
+}
+
+function switchInner(idx, tab) {
+  const key = `${currentUnit}-${idx}`;
+  innerTabs[key] = tab;
+  renderCard(idx);
+}
+
+function checkAnswer(idx, chosen) {
+  const q = questions[currentUnit][idx];
+  const opts = document.querySelectorAll(`#quiz-opts-${idx} .quiz-opt`);
+  const fb = document.getElementById(`quiz-fb-${idx}`);
+  opts.forEach(o => o.style.pointerEvents = 'none');
+  opts[chosen].classList.add(chosen === q.quiz.answer ? 'correct' : 'wrong');
+  if (chosen !== q.quiz.answer) opts[q.quiz.answer].classList.add('correct');
+  fb.textContent = chosen === q.quiz.answer ? q.quiz.feedback : `❌ Not quite — ${q.quiz.feedback}`;
+  fb.className = `quiz-feedback show ${chosen === q.quiz.answer ? 'correct' : 'wrong'}`;
+  if (chosen === q.quiz.answer) markDone(idx);
+}
+
+function markDone(idx) {
+  done.add(`${currentUnit}-${idx}`);
+  renderGrid();
+}
+
+function updateProgress() {
+  const total = 20;
+  const pct = (done.size / total) * 100;
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-text').textContent = `${done.size} / ${total} mastered`;
+}
+
+// Init
+renderGrid();
+</script>
+</body>
+</html>
