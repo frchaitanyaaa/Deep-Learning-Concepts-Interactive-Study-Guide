@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CNN Concepts — Interactive Study Guide</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f4f0; color: #1a1a18; min-height: 100vh; }
+.header { background: #fff; border-bottom: 1px solid #e5e3dc; padding: 18px 24px; position: sticky; top: 0; z-index: 100; }
+.header h1 { font-size: 18px; font-weight: 600; color: #1a1a18; }
+.header p { font-size: 13px; color: #6b6a65; margin-top: 2px; }
+.nav { display: flex; gap: 6px; flex-wrap: wrap; padding: 14px 24px; background: #fff; border-bottom: 1px solid #e5e3dc; }
+.nav button { font-size: 12px; padding: 5px 12px; border-radius: 20px; border: 1px solid #d3d1c7; background: #f1efe8; color: #5f5e5a; cursor: pointer; transition: all .2s; font-family: inherit; }
+.nav button.active { background: #185fa5; color: #fff; border-color: #185fa5; font-weight: 500; }
+.nav button:hover:not(.active) { background: #e3e1da; }
+.panel { display: none; padding: 24px; max-width: 860px; margin: 0 auto; }
+.panel.active { display: block; }
+.panel-title { font-size: 20px; font-weight: 600; color: #1a1a18; margin-bottom: 4px; }
+.panel-sub { font-size: 13px; color: #6b6a65; margin-bottom: 20px; line-height: 1.6; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+.card { background: #fff; border-radius: 10px; padding: 16px; border: 1px solid #e5e3dc; }
+.card-label { font-size: 10px; font-weight: 600; color: #8b8a85; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 10px; }
+.cell { width: 44px; height: 44px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 600; background: #f1efe8; border: 1.5px solid #d3d1c7; cursor: pointer; transition: all .25s; }
+.cell.hi { background: #b5d4f4; border-color: #378add; color: #042c53; }
+.cell.kernel-c { background: #9fe1cb; border-color: #1d9e75; color: #04342c; }
+.cell.out-active { background: #fac775; border-color: #ba7517; color: #412402; }
+.cell.out-plain { background: #fff; border-color: #d3d1c7; color: #1a1a18; }
+.matrix { display: inline-grid; gap: 4px; }
+.compute-box { background: #f5f4f0; border-radius: 8px; padding: 12px 14px; margin-top: 12px; }
+.mono { font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.9; color: #2c2c2a; }
+.result-big { font-size: 22px; font-weight: 700; color: #185fa5; margin-top: 4px; }
+.pos-btns { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+.pos-btn { font-size: 12px; padding: 5px 11px; border-radius: 6px; border: 1px solid #d3d1c7; background: #fff; color: #5f5e5a; cursor: pointer; font-family: inherit; transition: all .2s; }
+.pos-btn.active { background: #185fa5; color: #fff; border-color: #185fa5; }
+.pos-btn:hover:not(.active) { background: #f1efe8; }
+.pool-r0 { background: #b5d4f4 !important; color: #042c53 !important; border-color: #378add !important; }
+.pool-r1 { background: #9fe1cb !important; color: #04342c !important; border-color: #1d9e75 !important; }
+.pool-r2 { background: #f5c4b3 !important; color: #4a1b0c !important; border-color: #d85a30 !important; }
+.pool-r3 { background: #fac775 !important; color: #412402 !important; border-color: #ba7517 !important; }
+.pool-max-ring { outline: 3px solid #2c2c2a; outline-offset: 1px; font-weight: 800 !important; }
+.insight { background: #e6f1fb; border-radius: 8px; padding: 10px 14px; font-size: 13px; color: #185fa5; margin-top: 14px; line-height: 1.6; }
+.badge { display: inline-block; font-size: 11px; padding: 3px 9px; border-radius: 12px; font-weight: 600; margin: 2px; }
+.b-blue { background: #e6f1fb; color: #185fa5; }
+.b-teal { background: #e1f5ee; color: #0f6e56; }
+.b-amber { background: #faeeda; color: #854f0b; }
+.b-red { background: #fcebeb; color: #a32d2d; }
+.b-purple { background: #eeedfe; color: #534ab7; }
+.b-green { background: #eaf3de; color: #3b6d11; }
+table.ctbl { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
+.ctbl th { font-size: 10px; font-weight: 600; color: #8b8a85; text-transform: uppercase; letter-spacing: .06em; padding: 8px 10px; border-bottom: 1px solid #e5e3dc; text-align: left; }
+.ctbl td { padding: 9px 10px; border-bottom: 1px solid #f1efe8; color: #2c2c2a; vertical-align: top; line-height: 1.5; }
+.ctbl tr:last-child td { border-bottom: none; }
+.slider-row { display: flex; align-items: center; gap: 10px; margin: 10px 0; font-size: 13px; }
+.slider-row label { color: #6b6a65; min-width: 90px; }
+.slider-row input[type=range] { flex: 1; accent-color: #185fa5; }
+.slider-row span { min-width: 60px; text-align: right; font-weight: 600; color: #1a1a18; }
+.arch-box { display: inline-block; padding: 8px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; }
+.arch-flow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+.arch-arrow { font-size: 16px; color: #8b8a85; }
+.rcnn-btn { font-size: 12px; padding: 5px 12px; border-radius: 6px; border: 1px solid #d3d1c7; background: #fff; color: #5f5e5a; cursor: pointer; font-family: inherit; transition: all .2s; }
+.rcnn-btn.active { background: #1d9e75; color: #fff; border-color: #1d9e75; }
+.step-box { background: #f5f4f0; border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; border-left: 3px solid #d3d1c7; font-size: 13px; color: #2c2c2a; line-height: 1.7; transition: all .3s; }
+.step-box.active-step { border-left-color: #185fa5; background: #e6f1fb; }
+.progress-bar-wrap { height: 12px; border-radius: 6px; background: #e5e3dc; overflow: hidden; margin-bottom: 4px; }
+.progress-bar { height: 100%; border-radius: 6px; transition: width .5s ease; }
+.decision-step { padding: 10px 14px; border-radius: 8px; margin-bottom: 8px; font-size: 13px; cursor: pointer; border: 1px solid #d3d1c7; background: #fff; transition: all .2s; color: #2c2c2a; line-height: 1.5; }
+.decision-step:hover { background: #f1efe8; }
+.decision-step.revealed { cursor: default; border-color: #185fa5; background: #e6f1fb; color: #185fa5; }
+.decision-step.final { border-color: #1d9e75; background: #e1f5ee; color: #0f6e56; cursor: default; font-weight: 600; }
+.yolo-mini-grid { display: grid; grid-template-columns: repeat(4, 44px); gap: 3px; }
+.ygc { width: 44px; height: 44px; border-radius: 4px; border: 1px solid #d3d1c7; background: #f1efe8; display: flex; align-items: center; justify-content: center; font-size: 18px; transition: all .3s; }
+.ygc.detected { background: #9fe1cb; border-color: #1d9e75; transform: scale(1.08); }
+.toggle-wrap { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.toggle-wrap input[type=checkbox] { width: 16px; height: 16px; accent-color: #185fa5; cursor: pointer; }
+@media(max-width: 520px) { .grid2 { grid-template-columns: 1fr; } .panel { padding: 16px; } }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>CNN Concepts — Interactive Study Guide</h1>
+  <p>10 exam questions made fun. Click any tab to explore.</p>
+</div>
+<div class="nav" id="nav">
+  <button class="active" onclick="show(0)">Q1 Convolution</button>
+  <button onclick="show(1)">Q2 Pooling</button>
+  <button onclick="show(2)">Q3 Transfer learning</button>
+  <button onclick="show(3)">Q4 Kernel & Stride</button>
+  <button onclick="show(4)">Q5 VGG vs Inception vs ResNet</button>
+  <button onclick="show(5)">Q6 Skip connections</button>
+  <button onclick="show(6)">Q7 R-CNN evolution</button>
+  <button onclick="show(7)">Q8 YOLO vs R-CNN</button>
+  <button onclick="show(8)">Q9 Transfer learning effectiveness</button>
+  <button onclick="show(9)">Q10 Real-time architecture pick</button>
+</div>
+
+<!-- Q1 -->
+<div class="panel active" id="p0">
+  <p class="panel-title">Q1 — Convolution operation</p>
+  <p class="panel-sub">A kernel "slides" over the input. At each position it does element-wise multiply + sum. Click a position button to watch it happen live.</p>
+  <div class="grid2">
+    <div class="card">
+      <div class="card-label">Input (3×3) — highlighted = patch being convolved</div>
+      <div class="matrix" style="grid-template-columns:repeat(3,44px)" id="inp"></div>
+    </div>
+    <div class="card">
+      <div class="card-label">Kernel (2×2)</div>
+      <div class="matrix" style="grid-template-columns:repeat(2,44px)">
+        <div class="cell kernel-c">1</div><div class="cell kernel-c">0</div>
+        <div class="cell kernel-c">0</div><div class="cell kernel-c">1</div>
+      </div>
+      <div class="card-label" style="margin-top:14px">Output (2×2)</div>
+      <div class="matrix" style="grid-template-columns:repeat(2,44px)" id="outp"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-label">Position selector</div>
+    <div class="pos-btns">
+      <button class="pos-btn active" onclick="convSelect(0,0)">Top-left</button>
+      <button class="pos-btn" onclick="convSelect(0,1)">Top-right</button>
+      <button class="pos-btn" onclick="convSelect(1,0)">Bottom-left</button>
+      <button class="pos-btn" onclick="convSelect(1,1)">Bottom-right</button>
+    </div>
+    <div class="compute-box">
+      <div class="mono" id="conv-eq"></div>
+      <div class="result-big" id="conv-res"></div>
+    </div>
+  </div>
+  <div class="insight">💡 <strong>Key idea:</strong> The kernel acts like a tiny magnifying glass. Each output pixel asks "how much does this patch look like my pattern?" CNNs learn kernels that detect edges, textures, shapes automatically during training.</div>
+</div>
+
+<!-- Q2 -->
+<div class="panel" id="p1">
+  <p class="panel-title">Q2 — Max Pooling (2×2, stride 2)</p>
+  <p class="panel-sub">Hover over any coloured region in the input to see which value "wins". Pooling shrinks the feature map while keeping the strongest activations.</p>
+  <div class="grid2">
+    <div class="card">
+      <div class="card-label">Input 4×4 — 4 colour-coded regions</div>
+      <div class="matrix" style="grid-template-columns:repeat(4,44px)" id="pool-inp"></div>
+      <p style="font-size:11px;color:#8b8a85;margin-top:6px">Bold ring = max winner in each region</p>
+    </div>
+    <div class="card">
+      <div class="card-label">Pooled output 2×2</div>
+      <div class="matrix" style="grid-template-columns:repeat(2,44px)" id="pool-out"></div>
+      <div class="compute-box" id="pool-info" style="margin-top:14px">
+        <div class="mono">Hover a region to inspect</div>
+      </div>
+      <div style="margin-top:12px;font-size:13px;color:#5f5e5a;line-height:1.6">
+        <strong style="color:#1a1a18">4×4 → 2×2:</strong> spatial size halved, computation quartered.<br>
+        <strong style="color:#1a1a18">Translation invariance:</strong> small shifts won't change the output.
+      </div>
+    </div>
+  </div>
+  <div class="insight">💡 <strong>Why pool?</strong> Without it, moving an object 1 pixel would give a completely different feature map. Pooling makes the network robust to small movements — an edge at x=10 looks the same as x=11 after pooling.</div>
+</div>
+
+<!-- Q3 -->
+<div class="panel" id="p2">
+  <p class="panel-title">Q3 — Pre-trained CNN for feature extraction</p>
+  <p class="panel-sub">Instead of training from scratch on your small dataset, borrow a model already trained on 1.2M ImageNet images. Click each stage to understand it.</p>
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-label">Pipeline — click any stage</div>
+    <div class="arch-flow">
+      <div class="arch-box" style="background:#e6f1fb;color:#185fa5;cursor:pointer" onclick="tlSel(0)">📷 Input image</div>
+      <span class="arch-arrow">→</span>
+      <div class="arch-box" style="background:#e1f5ee;color:#0f6e56;cursor:pointer" onclick="tlSel(1)">Conv layers<br><small style="font-weight:400">🔒 frozen</small></div>
+      <span class="arch-arrow">→</span>
+      <div class="arch-box" style="background:#eeedfe;color:#534ab7;cursor:pointer" onclick="tlSel(2)">Feature vector</div>
+      <span class="arch-arrow">→</span>
+      <div class="arch-box" style="background:#faeeda;color:#854f0b;cursor:pointer" onclick="tlSel(3)">New classifier<br><small style="font-weight:400">✏️ trainable</small></div>
+      <span class="arch-arrow">→</span>
+      <div class="arch-box" style="background:#eaf3de;color:#3b6d11;cursor:pointer" onclick="tlSel(4)">Predicted class</div>
+    </div>
+    <div class="compute-box">
+      <div class="mono" id="tl-info">Click any stage above ↑</div>
+    </div>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <div class="card-label">What each layer group learns</div>
+      <table class="ctbl">
+        <tr><th>Layers</th><th>Detects</th></tr>
+        <tr><td>Early (1–3)</td><td>Edges, colours, gradients</td></tr>
+        <tr><td>Middle (4–8)</td><td>Textures, shapes, patterns</td></tr>
+        <tr><td>Deep (9–13)</td><td>Object parts, high-level structure</td></tr>
+        <tr><td style="color:#185fa5">New head</td><td style="color:#185fa5">Your specific classes</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-label">Popular pre-trained backbones</div>
+      <table class="ctbl">
+        <tr><th>Model</th><th>Params</th><th>Best for</th></tr>
+        <tr><td>VGG16</td><td>138M</td><td>Learning, prototyping</td></tr>
+        <tr><td>Inception</td><td>6.8M</td><td>Efficiency</td></tr>
+        <tr><td>ResNet-50</td><td>25M</td><td>Production</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="insight">💡 <strong>Analogy:</strong> You don't learn to recognise your new cat breed from scratch — you already know what fur, eyes, and ears look like. The pre-trained CNN already knows those visual concepts. You just teach it the final decision.</div>
+</div>
+
+<!-- Q4 -->
+<div class="panel" id="p3">
+  <p class="panel-title">Q4 — Kernel size & stride effects</p>
+  <p class="panel-sub">Drag the sliders. Watch how the output size formula changes in real time.</p>
+  <div class="grid2">
+    <div class="card">
+      <div class="card-label">Controls — input fixed at 8×8</div>
+      <div class="slider-row"><label>Kernel size</label><input type="range" min="2" max="5" value="3" id="ks" oninput="updateKS()"><span id="ks-v">3×3</span></div>
+      <div class="slider-row"><label>Stride</label><input type="range" min="1" max="3" value="1" id="st" oninput="updateKS()"><span id="st-v">1</span></div>
+      <div class="compute-box">
+        <div class="mono">Output = ⌊(8 − kernel) / stride⌋ + 1</div>
+        <div class="result-big" id="ks-result">= 6 × 6</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-label">What this means</div>
+      <div id="ks-explain" style="font-size:13px;color:#5f5e5a;line-height:1.8"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-label">Quick reference table</div>
+    <table class="ctbl">
+      <tr><th>Setting</th><th>Output size</th><th>Trade-off</th></tr>
+      <tr><td><span class="badge b-blue">3×3, stride 1</span></td><td>6×6 (from 8×8)</td><td>Fine detail, more computation</td></tr>
+      <tr><td><span class="badge b-teal">3×3, stride 2</span></td><td>3×3 (from 8×8)</td><td>Downsampled fast, some detail lost</td></tr>
+      <tr><td><span class="badge b-amber">5×5, stride 1</span></td><td>4×4 (from 8×8)</td><td>Broader context, heavier</td></tr>
+      <tr><td><span class="badge b-red">5×5, stride 2</span></td><td>2×2 (from 8×8)</td><td>Coarse, very fast</td></tr>
+    </table>
+  </div>
+  <div class="insight">💡 <strong>Modern trick:</strong> Stack two 3×3 convolutions instead of one 5×5. You get the same receptive field with fewer parameters and more non-linearity. VGG popularised this insight.</div>
+</div>
+
+<!-- Q5 -->
+<div class="panel" id="p4">
+  <p class="panel-title">Q5 — VGG16 vs Inception vs ResNet</p>
+  <p class="panel-sub">Three architectures, three philosophies. Understand the core innovation of each.</p>
+  <table class="ctbl" style="margin-bottom:16px">
+    <tr><th>Feature</th><th>VGG16</th><th>Inception</th><th>ResNet-50</th></tr>
+    <tr><td>Core idea</td><td>Deep stack, uniform 3×3</td><td>Parallel multi-scale filters</td><td>Residual / skip connections</td></tr>
+    <tr><td>Parameters</td><td><span class="badge b-red">~138M</span></td><td><span class="badge b-teal">~6.8M</span></td><td><span class="badge b-blue">~25M</span></td></tr>
+    <tr><td>Depth</td><td>16 layers</td><td>22 layers</td><td>50–152 layers</td></tr>
+    <tr><td>Filter sizes</td><td>Only 3×3</td><td>1×1, 3×3, 5×5 + pool</td><td>1×1, 3×3 bottleneck</td></tr>
+    <tr><td>Best use</td><td>Prototyping, learning</td><td>Edge/mobile deployment</td><td>Large-scale production</td></tr>
+  </table>
+  <div class="grid2">
+    <div class="card">
+      <div class="card-label">Inception module — one layer does all this</div>
+      <div style="display:flex;flex-direction:column;gap:5px">
+        <div style="background:#e6f1fb;border-radius:6px;padding:7px 12px;font-size:13px;color:#185fa5">🔵 1×1 conv → compress & point features</div>
+        <div style="background:#e1f5ee;border-radius:6px;padding:7px 12px;font-size:13px;color:#0f6e56">🟢 3×3 conv → local patterns</div>
+        <div style="background:#eeedfe;border-radius:6px;padding:7px 12px;font-size:13px;color:#534ab7">🟣 5×5 conv → broader context</div>
+        <div style="background:#faeeda;border-radius:6px;padding:7px 12px;font-size:13px;color:#854f0b">🟡 Max pool → strongest features</div>
+        <div style="text-align:center;font-size:12px;color:#8b8a85;margin-top:4px">↓ Concatenate all along depth axis</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-label">ResNet block — learning the residual</div>
+      <div style="font-family:'Courier New',monospace;font-size:13px;line-height:2;color:#2c2c2a">
+        x ──────────────────┐<br>
+        │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│<br>
+        ↓&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;skip │<br>
+        [Conv+BN+ReLU]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│<br>
+        [Conv+BN]→F(x)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│<br>
+        ↓&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│<br>
+        ⊕ ← ─ ─ ─ ─ ─ ─ ─ ─ ┘<br>
+        ↓<br>
+        H(x) = F(x) + x
+      </div>
+    </div>
+  </div>
+  <div class="insight">💡 <strong>Memory trick:</strong> VGG = Very (many params) Good (simple), Inception = Inception movie (many things happening at once), ResNet = Residual = leftovers (pass what's left to the next layer).</div>
+</div>
+
+<!-- Q6 -->
+<div class="panel" id="p5">
+  <p class="panel-title">Q6 — Residual connections & vanishing gradients</p>
+  <p class="panel-sub">Toggle skip connections off to see what goes wrong in deep training — and why ResNet was a breakthrough.</p>
+  <div class="grid2">
+    <div class="card">
+      <div class="card-label">
+        <label class="toggle-wrap">
+          <input type="checkbox" id="skip-tog" checked onchange="toggleSkip()">
+          Skip connections: <span id="skip-lbl" style="color:#0f6e56;font-weight:600">ON</span>
+        </label>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:2px;margin-top:12px">
+        <div class="step-box" style="width:180px;text-align:center">Input x</div>
+        <div style="font-size:18px;color:#8b8a85">↓</div>
+        <div class="step-box active-step" style="width:180px;text-align:center">Conv + BN + ReLU</div>
+        <div style="font-size:18px;color:#8b8a85">↓</div>
+        <div class="step-box active-step" style="width:180px;text-align:center">Conv + BN → F(x)</div>
+        <div style="font-size:18px;color:#8b8a85">↓</div>
+        <div class="step-box" id="skip-sum-box" style="width:180px;text-align:center;background:#e1f5ee;border-left-color:#1d9e75">⊕ F(x) + x</div>
+        <div style="font-size:18px;color:#8b8a85">↓</div>
+        <div class="step-box" style="width:180px;text-align:center">Output H(x)</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-label">Gradient flow visualisation</div>
+      <div id="grad-bars" style="display:flex;flex-direction:column;gap:8px;margin-top:4px"></div>
+      <div class="compute-box" style="margin-top:12px">
+        <div class="mono" id="skip-explain"></div>
+      </div>
+    </div>
+  </div>
+  <div class="insight">💡 <strong>The elegant insight:</strong> If F(x)=0, then H(x)=x — the block becomes an identity function. Learning "do nothing" is easy. Learning the full mapping H(x) from scratch is hard. Skip connections make every extra layer optional!</div>
+</div>
+
+<!-- Q7 -->
+<div class="panel" id="p6">
+  <p class="panel-title">Q7 — R-CNN → Fast R-CNN → Faster R-CNN</p>
+  <p class="panel-sub">Each generation fixed the single biggest bottleneck of the previous one. Click a model to see its full pipeline.</p>
+  <div class="card" style="margin-bottom:14px">
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+      <button class="rcnn-btn active" id="rb0" onclick="showRCNN(0)">R-CNN (2014)</button>
+      <button class="rcnn-btn" id="rb1" onclick="showRCNN(1)">Fast R-CNN (2015)</button>
+      <button class="rcnn-btn" id="rb2" onclick="showRCNN(2)">Faster R-CNN (2016)</button>
+    </div>
+    <div class="compute-box"><div class="mono" id="rcnn-desc" style="white-space:pre-line"></div></div>
+  </div>
+  <table class="ctbl">
+    <tr><th>Model</th><th>Speed</th><th>Bottleneck eliminated</th><th>Key invention</th></tr>
+    <tr><td>R-CNN</td><td><span class="badge b-red">~47 sec/img</span></td><td>—</td><td>Deep CNN features on proposals</td></tr>
+    <tr><td>Fast R-CNN</td><td><span class="badge b-amber">~2 sec/img</span></td><td>Running CNN per proposal</td><td>ROI Pooling on shared feature map</td></tr>
+    <tr><td>Faster R-CNN</td><td><span class="badge b-teal">~0.2 sec/img</span></td><td>Selective Search proposals</td><td>Region Proposal Network (RPN)</td></tr>
+  </table>
+  <div class="insight">💡 <strong>The pattern:</strong> R-CNN → Fast: stop repeating CNN for each region. Fast → Faster: stop using hand-crafted proposals. Faster R-CNN is fully end-to-end learnable — everything is differentiable.</div>
+</div>
+
+<!-- Q8 -->
+<div class="panel" id="p7">
+  <p class="panel-title">Q8 — YOLO vs R-CNN trade-offs</p>
+  <p class="panel-sub">Two fundamental approaches to object detection. Neither is universally better — pick based on your constraints.</p>
+  <div class="grid2">
+    <div class="card">
+      <div class="card-label">YOLO — single pass detection</div>
+      <div class="yolo-mini-grid" id="yolo-grid"></div>
+      <p style="font-size:11px;color:#8b8a85;margin-top:6px">Image divided into grid. Each cell predicts boxes & classes simultaneously.</p>
+      <div style="margin-top:8px"><span class="badge b-teal">Real-time</span> <span class="badge b-blue">One forward pass</span> <span class="badge b-purple">Full image context</span></div>
+      <div style="font-size:13px;color:#5f5e5a;margin-top:10px;line-height:1.7">
+        <strong style="color:#1a1a18">Weaknesses:</strong> struggles with very small or densely packed objects. Grid cells can only predict a fixed number of boxes.
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-label">R-CNN family — propose then classify</div>
+      <div style="display:flex;flex-direction:column;gap:6px;font-size:13px">
+        <div class="step-box" style="border-left-color:#185fa5">1. Extract feature map (one CNN pass)</div>
+        <div class="step-box" style="border-left-color:#534ab7">2. Generate region proposals (RPN)</div>
+        <div class="step-box" style="border-left-color:#0f6e56">3. ROI Pooling → classify each region</div>
+        <div class="step-box" style="border-left-color:#ba7517">4. Refine bounding boxes</div>
+      </div>
+      <div style="margin-top:10px"><span class="badge b-blue">More accurate</span> <span class="badge b-amber">Slower</span> <span class="badge b-green">Better for small objects</span></div>
+    </div>
+  </div>
+  <table class="ctbl" style="margin-top:14px">
+    <tr><th>Criterion</th><th>YOLO</th><th>Faster R-CNN</th></tr>
+    <tr><td>Speed</td><td>✅ 30–100+ FPS</td><td>❌ 5–10 FPS</td></tr>
+    <tr><td>Accuracy (mAP)</td><td>⚠️ Good</td><td>✅ Better</td></tr>
+    <tr><td>Small objects</td><td>⚠️ Harder</td><td>✅ Better</td></tr>
+    <tr><td>Real-time use</td><td>✅ Yes</td><td>❌ Difficult</td></tr>
+    <tr><td>Implementation</td><td>✅ Simpler</td><td>⚠️ Complex</td></tr>
+  </table>
+  <div class="insight">💡 <strong>Rule of thumb:</strong> Live video, drones, autonomous cars → YOLO. Medical imaging, satellite analysis, forensics → Faster R-CNN.</div>
+</div>
+
+<!-- Q9 -->
+<div class="panel" id="p8">
+  <p class="panel-title">Q9 — Effectiveness of transfer learning</p>
+  <p class="panel-sub">Drag the slider to see how accuracy compares between training from scratch vs transfer learning as dataset size changes.</p>
+  <div class="card" style="margin-bottom:16px">
+    <div class="slider-row"><label>Dataset size</label><input type="range" min="1" max="10" value="2" id="ds-slider" oninput="updateDS()"><span id="ds-v">Small (500)</span></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px">
+      <div>
+        <div class="card-label">From scratch</div>
+        <div class="progress-bar-wrap"><div class="progress-bar" id="scratch-bar" style="width:20%;background:#e24b4a"></div></div>
+        <div id="scratch-lbl" style="font-size:12px;color:#8b8a85;margin-top:4px">~55% accuracy</div>
+      </div>
+      <div>
+        <div class="card-label">Transfer learning</div>
+        <div class="progress-bar-wrap"><div class="progress-bar" id="tl-bar" style="width:85%;background:#1d9e75"></div></div>
+        <div id="tl-lbl" style="font-size:12px;color:#8b8a85;margin-top:4px">~85% accuracy</div>
+      </div>
+    </div>
+    <div class="insight" id="ds-insight" style="margin-top:12px"></div>
+  </div>
+  <div class="card">
+    <div class="card-label">Four transfer learning strategies</div>
+    <table class="ctbl">
+      <tr><th>Strategy</th><th>Freeze?</th><th>Best when</th></tr>
+      <tr><td>Use model as-is</td><td>All layers</td><td>Same domain as ImageNet, tiny dataset</td></tr>
+      <tr><td>Feature extractor</td><td>All layers</td><td>Small dataset, similar domain</td></tr>
+      <tr><td>Partial fine-tune</td><td>Early layers only</td><td>Medium dataset, similar domain</td></tr>
+      <tr><td>Full fine-tune</td><td>None (all trainable)</td><td>Large dataset OR very different domain</td></tr>
+    </table>
+  </div>
+  <div class="insight">💡 <strong>Why it works:</strong> Low-level features (edges, corners, textures) are universal across all image domains. Only the final classification decision is task-specific.</div>
+</div>
+
+<!-- Q10 -->
+<div class="panel" id="p9">
+  <p class="panel-title">Q10 — Best CNN for real-time object detection</p>
+  <p class="panel-sub">Work through the decision logic step by step. Click each node to reveal the reasoning.</p>
+  <div class="card" style="margin-bottom:16px" id="decision-card">
+    <div class="card-label">Decision tree — click each step</div>
+    <div class="decision-step revealed" id="d0">🎯 Task: real-time object detection (live video, autonomous systems)</div>
+    <div class="decision-step" id="d1" onclick="revealD(1)">❓ Is inference speed the primary constraint? → Click to decide</div>
+    <div class="decision-step" id="d2" style="display:none" onclick="revealD(2)">❓ Are two-stage detectors fast enough? → Click to check</div>
+    <div class="decision-step" id="d3" style="display:none">✅ Answer: <strong>YOLO</strong> — single-stage, grid-based, one forward pass. Achieves 30–100+ FPS vs Faster R-CNN's 5–10 FPS.</div>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <div class="card-label">Why YOLO wins for real-time</div>
+      <div style="font-size:13px;color:#5f5e5a;line-height:1.9">
+        • <strong style="color:#1a1a18">Single forward pass</strong> — no separate proposal stage<br>
+        • <strong style="color:#1a1a18">Full image context</strong> — fewer background false positives<br>
+        • <strong style="color:#1a1a18">Compact</strong> — smaller variants run on edge devices<br>
+        • <strong style="color:#1a1a18">30–100+ FPS</strong> on a modern GPU
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-label">Real-world deployments</div>
+      <div style="display:flex;flex-direction:column;gap:5px;font-size:13px">
+        <div style="padding:6px 10px;background:#e1f5ee;border-radius:6px;color:#0f6e56">🚗 Autonomous driving — 60 FPS needed</div>
+        <div style="padding:6px 10px;background:#e6f1fb;border-radius:6px;color:#185fa5">📹 Surveillance — continuous 24/7 streams</div>
+        <div style="padding:6px 10px;background:#eeedfe;border-radius:6px;color:#534ab7">🤖 Robotics — low-latency reactions</div>
+        <div style="padding:6px 10px;background:#faeeda;border-radius:6px;color:#854f0b">🏭 Factory QC — real-time defect detection</div>
+      </div>
+    </div>
+  </div>
+  <div class="insight">💡 <strong>Exception:</strong> If the task is medical diagnosis or satellite imagery where missing a small object is costly, Faster R-CNN's higher accuracy justifies its slower speed.</div>
+</div>
+
+<script>
+// NAV
+const panels = document.querySelectorAll('.panel');
+const navBtns = document.querySelectorAll('.nav button');
+function show(i) {
+  panels.forEach((p,j) => p.classList.toggle('active', j===i));
+  navBtns.forEach((b,j) => b.classList.toggle('active', j===i));
+}
+
+// Q1 Convolution
+const inputVals = [1,2,3,4,5,6,7,8,9];
+const outVals = [6,8,12,14];
+const highlights = [[0,1,3,4],[1,2,4,5],[3,4,6,7],[4,5,7,8]];
+const eqs = [
+  '(1×1)+(2×0)+(4×0)+(5×1)\n= 1+0+0+5',
+  '(2×1)+(3×0)+(5×0)+(6×1)\n= 2+0+0+6',
+  '(4×1)+(5×0)+(7×0)+(8×1)\n= 4+0+0+8',
+  '(5×1)+(6×0)+(8×0)+(9×1)\n= 5+0+0+9',
+];
+const labels = ['Top-left','Top-right','Bottom-left','Bottom-right'];
+// Build input matrix
+const inpEl = document.getElementById('inp');
+inputVals.forEach(v => { const d = document.createElement('div'); d.className='cell'; d.textContent=v; inpEl.appendChild(d); });
+// Build output matrix
+const outEl = document.getElementById('outp');
+outVals.forEach((v,i) => {
+  const d = document.createElement('div');
+  d.className='cell out-plain'; d.textContent=v;
+  d.onclick = () => convSelect(Math.floor(i/2), i%2);
+  outEl.appendChild(d);
+});
+function convSelect(r,c) {
+  const idx = r*2+c;
+  document.querySelectorAll('#inp .cell').forEach((cl,i) => cl.className='cell'+(highlights[idx].includes(i)?' hi':''));
+  document.querySelectorAll('#outp .cell').forEach((cl,i) => cl.className='cell '+(i===idx?'out-active':'out-plain'));
+  document.getElementById('conv-eq').textContent = eqs[idx];
+  document.getElementById('conv-res').textContent = '= '+outVals[idx];
+  document.querySelectorAll('.pos-btn').forEach((b,i) => b.classList.toggle('active', i===idx));
+}
+convSelect(0,0);
+
+// Q2 Pooling
+const poolVals = [1,4,2,1, 5,8,3,4, 7,6,4,5, 1,3,1,2];
+const poolRegion = [0,0,1,1, 0,0,1,1, 2,2,3,3, 2,2,3,3];
+const poolMaxIdx = [5,7,9,14]; // indices of max in each region: 8,4,7,2 → wait: region0={0,1,4,5}→max=8@5, region1={2,3,6,7}→max=4@7, region2={8,9,12,13}→max=7@9, region3={10,11,14,15}→max=5@10
+// recalc: region0 positions = where poolRegion[i]==0 → 0,1,4,5 → vals 1,4,5,8 max=8 at idx5
+// region1 = 2,3,6,7 → vals 2,1,3,4 max=4 at idx7
+// region2 = 8,9,12,13 → vals 7,6,1,3 max=7 at idx8
+// region3 = 10,11,14,15 → vals 4,5,1,2 max=5 at idx11
+const poolMax = [5,7,8,11];
+const poolMsgs = [
+  'Region A (blue): cells {1,4,5,8} → max(1,4,5,8) = 8 ✓',
+  'Region B (teal): cells {2,1,3,4} → max(2,1,3,4) = 4 ✓',
+  'Region C (coral): cells {7,6,1,3} → max(7,6,1,3) = 7 ✓',
+  'Region D (amber): cells {4,5,1,2} → max(4,5,1,2) = 5 ✓',
+];
+const poolOutVals = [8,4,7,5];
+const piEl = document.getElementById('pool-inp');
+poolVals.forEach((v,i) => {
+  const d = document.createElement('div');
+  d.className = 'cell pool-r'+poolRegion[i]+(poolMax.includes(i)?' pool-max-ring':'');
+  d.textContent = v;
+  d.onmouseenter = () => {
+    document.getElementById('pool-info').innerHTML = '<div class="mono">'+poolMsgs[poolRegion[i]]+'</div>';
+    document.querySelectorAll('#pool-out .cell').forEach((c,j) => c.style.transform = j===poolRegion[i]?'scale(1.12)':'scale(1)');
+  };
+  piEl.appendChild(d);
+});
+const poEl = document.getElementById('pool-out');
+poolOutVals.forEach((v,i) => {
+  const d = document.createElement('div');
+  d.className = 'cell pool-r'+i;
+  d.textContent = v;
+  poEl.appendChild(d);
+});
+
+// Q3 Transfer learning
+const tlTexts = [
+  'Your image (e.g. 224×224 RGB) is normalised. VGG16 expects exactly this format — mean subtracted, channel order matters.',
+  'The 13 conv layers run a forward pass. Weights are FROZEN — no gradients update these. They extract universal visual features learned from 1.2M images.',
+  'Output: a 4096-dimensional vector (VGG16). This is your image, re-expressed as "how much does it contain of each learned visual concept".',
+  'A small Dense(512) → Dense(num_classes) network. THIS is the only part that trains on your data. Even 200 examples is often enough.',
+  'Softmax converts the final layer to probabilities. The pre-trained backbone gave it a huge representational head-start.',
+];
+function tlSel(i){ document.getElementById('tl-info').textContent = tlTexts[i]; }
+tlSel(0);
+
+// Q4 Kernel & Stride
+function updateKS() {
+  const k = +document.getElementById('ks').value;
+  const s = +document.getElementById('st').value;
+  document.getElementById('ks-v').textContent = k+'×'+k;
+  document.getElementById('st-v').textContent = s;
+  const out = Math.floor((8-k)/s)+1;
+  document.getElementById('ks-result').textContent = out > 0 ? `= ${out} × ${out}` : '= too large!';
+  const expl = document.getElementById('ks-explain');
+  const detail = s === 1 ? 'Maximum detail — every position is checked.' : s === 2 ? 'Half positions checked — faster but some detail lost.' : 'Only 1/3 of positions checked — very coarse.';
+  const ctx = k <= 3 ? 'Fine local patterns — edges, corners, small textures.' : k === 4 ? 'Medium context — can capture slightly larger shapes.' : 'Wide context — captures broader patterns, like parts of objects.';
+  expl.innerHTML = `<strong style="color:#1a1a18">Kernel scope:</strong> Each output cell "sees" a ${k}×${k} input patch.<br><br><strong style="color:#1a1a18">Stride effect:</strong> ${detail}<br><br><strong style="color:#1a1a18">Feature scope:</strong> ${ctx}<br><br><strong style="color:#1a1a18">Output:</strong> ${out>0?out+'×'+out+' feature map':'Invalid — kernel larger than output can handle'}`;
+}
+updateKS();
+
+// Q6 Skip connections
+function buildGradBars(on) {
+  const el = document.getElementById('grad-bars');
+  el.innerHTML = '';
+  const layers = on ? 
+    [['Layer 1 gradient',95,'#1d9e75'],['Layer 5 gradient',88,'#1d9e75'],['Layer 10 gradient',80,'#1d9e75'],['Layer 20 gradient',72,'#1d9e75'],['Layer 50 gradient',65,'#1d9e75']] :
+    [['Layer 1 gradient',5,'#e24b4a'],['Layer 5 gradient',18,'#e24b4a'],['Layer 10 gradient',40,'#e24b4a'],['Layer 20 gradient',65,'#e24b4a'],['Layer 50 gradient',95,'#1d9e75']];
+  layers.forEach(([lbl,w,col]) => {
+    el.innerHTML += `<div><div style="font-size:11px;color:#8b8a85;margin-bottom:2px">${lbl}</div><div class="progress-bar-wrap"><div class="progress-bar" style="width:${w}%;background:${col}"></div></div></div>`;
+  });
+  document.getElementById('skip-explain').textContent = on 
+    ? 'Skip connections act as gradient highways. All layers receive strong gradients → effective learning throughout the full depth.'
+    : 'Without skip connections, gradients multiply through many layers. Each multiplication by a small number makes the gradient vanish — early layers learn almost nothing.';
+}
+function toggleSkip() {
+  const on = document.getElementById('skip-tog').checked;
+  document.getElementById('skip-lbl').textContent = on ? 'ON' : 'OFF';
+  document.getElementById('skip-lbl').style.color = on ? '#0f6e56' : '#a32d2d';
+  const ssb = document.getElementById('skip-sum-box');
+  ssb.textContent = on ? '⊕ F(x) + x (skip added)' : 'F(x) only — no skip';
+  ssb.style.background = on ? '#e1f5ee' : '#fcebeb';
+  ssb.style.borderLeftColor = on ? '#1d9e75' : '#a32d2d';
+  buildGradBars(on);
+}
+buildGradBars(true);
+
+// Q7 RCNN
+const rcnnDesc = [
+  `R-CNN — 2014 (slow but a breakthrough at the time)
+
+1. Selective Search generates ~2000 region proposals per image
+2. Each region is cropped and warped to fixed size (227×227)  
+3. Each of the 2000 crops gets its own full CNN pass ← huge bottleneck!
+4. SVM classifies each crop; separate regressor refines bounding box
+
+Speed: ~47 seconds per image
+Problem: 2000 CNN runs is painfully redundant`,
+
+  `Fast R-CNN — 2015 (share the CNN pass)
+
+1. Run the entire image through CNN ONCE → get a feature map
+2. Use Selective Search proposals, but PROJECT them onto the feature map
+3. ROI Pooling: extract fixed-size feature patches from shared map
+4. Single softmax classifier + bounding box regressor, trained end-to-end
+
+Speed: ~2 seconds per image (23× faster!)
+Problem: Selective Search is still slow and not learnable`,
+
+  `Faster R-CNN — 2016 (learn the proposals too)
+
+1. Shared CNN backbone runs once on full image
+2. Region Proposal Network (RPN): tiny CNN sliding over feature map
+   → proposes ~300 high-quality regions instead of 2000
+3. ROI Pooling on proposed regions
+4. Classifier + box regressor (same as Fast R-CNN)
+   
+Speed: ~0.2 seconds per image (250× faster than original!)
+Fully end-to-end trainable — a complete detection network`
+];
+function showRCNN(i) {
+  document.querySelectorAll('[id^="rb"]').forEach((b,j) => b.classList.toggle('active', j===i));
+  document.getElementById('rcnn-desc').textContent = rcnnDesc[i];
+}
+showRCNN(0);
+
+// Q8 YOLO grid animation
+const yoloItems = [
+  {e:'🐕',l:'dog'},{e:'·',l:''},{e:'·',l:''},{e:'·',l:''},
+  {e:'·',l:''},{e:'🚗',l:'car'},{e:'·',l:''},{e:'·',l:''},
+  {e:'·',l:''},{e:'·',l:''},{e:'🐱',l:'cat'},{e:'·',l:''},
+  {e:'·',l:''},{e:'·',l:''},{e:'·',l:''},{e:'·',l:''},
+];
+const yg = document.getElementById('yolo-grid');
+yoloItems.forEach(({e,l}) => {
+  const d = document.createElement('div');
+  d.className='ygc'+(l?' detected':'');
+  d.innerHTML=`<span>${e}</span>${l?`<span style="font-size:9px;color:#04342c">${l}</span>`:''}`;
+  yg.appendChild(d);
+});
+
+// Q9 Dataset size
+const dsSizes = ['Tiny (100)','Small (500)','Small (1K)','Medium (2K)','Medium (5K)','Medium (10K)','Large (20K)','Large (50K)','Very large (100K)','Huge (500K+)'];
+const dsInsights = [
+  'Tiny dataset: Transfer learning is ESSENTIAL. Scratch training will badly overfit. Accuracy gap is enormous.',
+  'Small dataset: Transfer learning gives 30%+ accuracy advantage. Always prefer it.',
+  'Small-medium: Transfer learning still significantly ahead. Fine-tune only the last 1-2 layers.',
+  'Medium: Gap narrows but transfer learning still wins. Consider unfreezing more layers.',
+  'Medium-large: Transfer learning still recommended. Start fine-tuning earlier layers too.',
+  'Large: Both approaches competitive. Transfer learning still faster to train.',
+  'Very large: From-scratch catching up. Transfer learning mainly saves compute, not accuracy.',
+  'Big data: From-scratch viable if domain is very different from ImageNet.',
+  'Huge dataset: Either approach works. Transfer learning still faster convergence.',
+  'Massive dataset: Domain experts sometimes prefer scratch. Transfer mainly helps early in training.',
+];
+function updateDS() {
+  const v = +document.getElementById('ds-slider').value;
+  document.getElementById('ds-v').textContent = dsSizes[v-1];
+  const sa = Math.min(95, 30+v*7);
+  const ta = Math.min(98, 75+v*2.3);
+  document.getElementById('scratch-bar').style.width = sa+'%';
+  document.getElementById('tl-bar').style.width = ta+'%';
+  document.getElementById('scratch-lbl').textContent = `~${Math.round(sa)}% accuracy`;
+  document.getElementById('tl-lbl').textContent = `~${Math.round(ta)}% accuracy`;
+  document.getElementById('ds-insight').textContent = '💡 '+dsInsights[v-1];
+}
+updateDS();
+
+// Q10 Decision tree
+let dRevealed = 0;
+function revealD(i) {
+  if(i===1) {
+    const d1=document.getElementById('d1');
+    d1.textContent = '✅ Yes — real-time means <100ms per frame. Two-stage detectors need 200–2000ms.';
+    d1.className='decision-step revealed';
+    const d2=document.getElementById('d2'); d2.style.display='block';
+  }
+  if(i===2) {
+    const d2=document.getElementById('d2');
+    d2.textContent = '✅ Confirmed: Faster R-CNN ~200ms. Fast R-CNN ~2000ms. YOLO <30ms. Two-stage fails the real-time bar.';
+    d2.className='decision-step revealed';
+    const d3=document.getElementById('d3'); d3.style.display='block'; d3.className='decision-step final';
+  }
+}
+</script>
+</body>
+</html>
